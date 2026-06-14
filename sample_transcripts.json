@@ -1,0 +1,169 @@
+{
+  "transcripts": [
+    {
+      "id": "txn_001",
+      "expected_category": "Already Paid",
+      "invoice_ref": "#4821",
+      "amount": "$12,400",
+      "days_overdue": 45,
+      "messages": [
+        {
+          "role": "agent",
+          "content": "Hi, this is Sarah calling on behalf of our client regarding invoice number 4821 for $12,400, currently 45 days past due. Is now an okay time to chat for a moment?",
+          "start_timestamp": 1718360641200,
+          "end_timestamp": 1718360646800
+        },
+        {
+          "role": "debtor",
+          "content": "Oh, that one — yeah, we already paid that. I'm pretty sure it went out last Tuesday.",
+          "start_timestamp": 1718360647200,
+          "end_timestamp": 1718360650400
+        },
+        {
+          "role": "agent",
+          "content": "Thanks for letting me know. To help our finance team locate the payment quickly, could you share the payment method and any transaction or reference number you have?",
+          "start_timestamp": 1718360650800,
+          "end_timestamp": 1718360655600
+        },
+        {
+          "role": "debtor",
+          "content": "I'd have to check with our accounts payable team for the reference number. Let me get back to you on that.",
+          "start_timestamp": 1718360656000,
+          "end_timestamp": 1718360659200
+        }
+      ]
+    },
+    {
+      "id": "txn_002",
+      "expected_category": "Wrong Amount",
+      "invoice_ref": "#5103",
+      "amount": "$8,750",
+      "days_overdue": 62,
+      "messages": [
+        {
+          "role": "agent",
+          "content": "Good afternoon, I'm reaching out about invoice 5103 for $8,750, which is 62 days overdue. Do you have a quick moment?",
+          "start_timestamp": 1718440000000,
+          "end_timestamp": 1718440005000
+        },
+        {
+          "role": "debtor",
+          "content": "Actually, hold on — that number doesn't look right to me. Our agreement was for a lower rate, I think there's an error on this invoice.",
+          "start_timestamp": 1718440005400,
+          "end_timestamp": 1718440010800
+        },
+        {
+          "role": "agent",
+          "content": "I understand, and I want to make sure this gets resolved correctly. Do you have access to the original purchase order or pricing agreement so our team can compare it against this invoice?",
+          "start_timestamp": 1718440011200,
+          "end_timestamp": 1718440017000
+        },
+        {
+          "role": "debtor",
+          "content": "Yeah, I can pull up the PO from our system. Give me a day to send that over.",
+          "start_timestamp": 1718440017400,
+          "end_timestamp": 1718440020600
+        }
+      ]
+    },
+    {
+      "id": "txn_003",
+      "expected_category": "Service Not Received",
+      "invoice_ref": "#6390",
+      "amount": "$23,100",
+      "days_overdue": 38,
+      "messages": [
+        {
+          "role": "agent",
+          "content": "Hi, I'm calling regarding invoice 6390 for $23,100, currently 38 days past due. Could I have a few minutes of your time?",
+          "start_timestamp": 1718520000000,
+          "end_timestamp": 1718520004500
+        },
+        {
+          "role": "debtor",
+          "content": "I'm sorry, but I have no idea what this is for. We never received anything matching this description — nothing was delivered to us.",
+          "start_timestamp": 1718520005000,
+          "end_timestamp": 1718520011200
+        },
+        {
+          "role": "agent",
+          "content": "I appreciate you flagging that, and I'll make sure this gets looked into right away. I'll pass this directly to our account management team so they can verify the delivery record with you. You won't receive further automated reminders on this invoice until it's resolved.",
+          "start_timestamp": 1718520011600,
+          "end_timestamp": 1718520020000
+        },
+        {
+          "role": "debtor",
+          "content": "Okay, that's fine — just make sure someone actually follows up.",
+          "start_timestamp": 1718520020400,
+          "end_timestamp": 1718520023800
+        }
+      ]
+    },
+    {
+      "id": "txn_004",
+      "expected_category": "Need Manager Approval",
+      "invoice_ref": "#7021",
+      "amount": "$3,250",
+      "days_overdue": 91,
+      "messages": [
+        {
+          "role": "agent",
+          "content": "Hello, this is regarding invoice 7021 for $3,250, which is now 91 days overdue. I wanted to check in on the status of this payment.",
+          "start_timestamp": 1718600000000,
+          "end_timestamp": 1718600004200
+        },
+        {
+          "role": "debtor",
+          "content": "I see it here, but I'm not the one who signs off on payments over a certain amount. I'd need to run this by my manager first.",
+          "start_timestamp": 1718600004600,
+          "end_timestamp": 1718600010000
+        },
+        {
+          "role": "agent",
+          "content": "That's completely understandable. Would it help if I followed up with you again in a few business days, once you've had a chance to discuss it with them?",
+          "start_timestamp": 1718600010400,
+          "end_timestamp": 1718600014600
+        },
+        {
+          "role": "debtor",
+          "content": "Yeah, give me until early next week and I should have an answer.",
+          "start_timestamp": 1718600015000,
+          "end_timestamp": 1718600017800
+        }
+      ]
+    },
+    {
+      "id": "txn_005",
+      "expected_category": "Fraud Claim",
+      "invoice_ref": "#8847",
+      "amount": "$15,600",
+      "days_overdue": 30,
+      "messages": [
+        {
+          "role": "agent",
+          "content": "Hi, I'm calling about invoice 8847 for $15,600, currently 30 days overdue. Do you have a moment to discuss this?",
+          "start_timestamp": 1718680000000,
+          "end_timestamp": 1718680004000
+        },
+        {
+          "role": "debtor",
+          "content": "Wait — I don't recognize this company at all, and nobody here authorized any order like this. This honestly looks like it could be some kind of scam.",
+          "start_timestamp": 1718680004400,
+          "end_timestamp": 1718680011000
+        },
+        {
+          "role": "agent",
+          "content": "I want to take this seriously and get it resolved properly. I'm going to escalate this immediately to our compliance team for review, and we'll pause all outreach on this account until that's complete. Someone will follow up with you directly.",
+          "start_timestamp": 1718680011400,
+          "end_timestamp": 1718680020200
+        },
+        {
+          "role": "debtor",
+          "content": "Okay, please do — I'd like this looked into.",
+          "start_timestamp": 1718680020600,
+          "end_timestamp": 1718680023000
+        }
+      ]
+    }
+  ]
+}
