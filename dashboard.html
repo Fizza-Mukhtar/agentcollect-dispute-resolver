@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AgentCollect — Dispute Resolution</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #ffffff;
+    color: #111111;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---------- Left panel ---------- */
+  .sidebar {
+    border-right: 1px solid #e0e0e0;
+    padding: 24px;
+  }
+
+  .brand {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 12px;
+  }
+
+  .invoice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .invoice-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .invoice-item:hover {
+    border-color: #bbb;
+  }
+
+  .invoice-item.active {
+    border-color: #111;
+    background: #fafafa;
+  }
+
+  .invoice-item .row1 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .invoice-item .row2 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+  }
+
+  .invoice-item .ref {
+    font-weight: 400;
+    color: #aaa;
+  }
+
+  .status-pill {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid #ddd;
+    color: #888;
+    margin-top: 8px;
+  }
+
+  .status-pill.done {
+    border-color: #111;
+    color: #111;
+    background: #f5f5f5;
+  }
+
+  /* ---------- Right panel ---------- */
+  .main {
+    padding: 32px 48px;
+    max-width: 760px;
+  }
+
+  .main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .main-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .main-header .meta {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  .run-btn {
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .run-btn:hover { opacity: 0.85; }
+  .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Transcript */
+  .transcript {
+    margin-bottom: 28px;
+  }
+
+  .transcript .turn {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .transcript .turn:last-child { border-bottom: none; }
+
+  .turn .speaker {
+    flex: 0 0 70px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #aaa;
+    padding-top: 2px;
+  }
+
+  .turn.agent .speaker { color: #888; }
+  .turn.debtor .speaker { color: #111; font-weight: 600; }
+
+  .turn .content { flex: 1; }
+
+  /* Results */
+  .results {
+    display: none;
+  }
+
+  .results.visible {
+    display: block;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .card .label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .card .value {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .card .sub {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  .tier-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-top: 6px;
+  }
+
+  .tier-badge.auto { background: #111; color: #fff; }
+  .tier-badge.suggested { background: #eee; color: #111; border: 1px solid #ccc; }
+  .tier-badge.needs_review { background: #fff; color: #111; border: 1px solid #111; }
+
+  .full-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .full-card .label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .full-card p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .entity-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f2f2f2;
+  }
+
+  .entity-row:last-child { border-bottom: none; }
+  .entity-row .k { color: #888; }
+  .entity-row .v { font-weight: 500; }
+
+  .followup-box {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    background: #fafafa;
+    font-size: 14px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .placeholder {
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+    padding: 60px 0;
+  }
+
+  .loading {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    padding: 60px 0;
+  }
+
+  .error-box {
+    border: 1px solid #111;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 13px;
+    color: #111;
+    background: #fafafa;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- LEFT: invoice queue -->
+  <div class="sidebar">
+    <div class="brand">AgentCollect</div>
+    <div class="title">Recovery dashboard</div>
+
+    <div class="section-label">Flagged accounts</div>
+    <div class="invoice-list" id="invoiceList"></div>
+  </div>
+
+  <!-- RIGHT: detail + classification -->
+  <div class="main">
+    <div class="main-header">
+      <div>
+        <h1 id="detailTitle">Select an account</h1>
+        <div class="meta" id="detailMeta"></div>
+      </div>
+      <button class="run-btn" id="runBtn" disabled>Resolve dispute</button>
+    </div>
+
+    <div id="transcriptContainer"></div>
+
+    <div id="resultsContainer" class="results"></div>
+  </div>
+
+</div>
+
+<script>
+// ----------------------------------------------------------------------
+// Sample data (RetellAI-style transcripts, mirrors sample_transcripts.json)
+// ----------------------------------------------------------------------
+const ACCOUNTS = [
+  {
+    id: "txn_001",
+    company: "Acme Corp",
+    invoice_ref: "#4821",
+    amount: "$12,400",
+    days_overdue: 45,
+    messages: [
+      { role: "agent", content: "Hi, this is Sarah calling on behalf of our client regarding invoice number 4821 for $12,400, currently 45 days past due. Is now an okay time to chat for a moment?" },
+      { role: "debtor", content: "Oh, that one — yeah, we already paid that. I'm pretty sure it went out last Tuesday." },
+      { role: "agent", content: "Thanks for letting me know. To help our finance team locate the payment quickly, could you share the payment method and any transaction or reference number you have?" },
+      { role: "debtor", content: "I'd have to check with our accounts payable team for the reference number. Let me get back to you on that." }
+    ]
+  },
+  {
+    id: "txn_002",
+    company: "TechFlow Inc",
+    invoice_ref: "#5103",
+    amount: "$8,750",
+    days_overdue: 62,
+    messages: [
+      { role: "agent", content: "Good afternoon, I'm reaching out about invoice 5103 for $8,750, which is 62 days overdue. Do you have a quick moment?" },
+      { role: "debtor", content: "Actually, hold on — that number doesn't look right to me. Our agreement was for a lower rate, I think there's an error on this invoice." },
+      { role: "agent", content: "I understand, and I want to make sure this gets resolved correctly. Do you have access to the original purchase order or pricing agreement so our team can compare it against this invoice?" },
+      { role: "debtor", content: "Yeah, I can pull up the PO from our system. Give me a day to send that over." }
+    ]
+  },
+  {
+    id: "txn_003",
+    company: "DataSync Ltd",
+    invoice_ref: "#6390",
+    amount: "$23,100",
+    days_overdue: 38,
+    messages: [
+      { role: "agent", content: "Hi, I'm calling regarding invoice 6390 for $23,100, currently 38 days past due. Could I have a few minutes of your time?" },
+      { role: "debtor", content: "I'm sorry, but I have no idea what this is for. We never received anything matching this description — nothing was delivered to us." },
+      { role: "agent", content: "I appreciate you flagging that, and I'll make sure this gets looked into right away. I'll pass this directly to our account management team so they can verify the delivery record with you. You won't receive further automated reminders on this invoice until it's resolved." },
+      { role: "debtor", content: "Okay, that's fine — just make sure someone actually follows up." }
+    ]
+  },
+  {
+    id: "txn_004",
+    company: "CloudBase AI",
+    invoice_ref: "#7021",
+    amount: "$3,250",
+    days_overdue: 91,
+    messages: [
+      { role: "agent", content: "Hello, this is regarding invoice 7021 for $3,250, which is now 91 days overdue. I wanted to check in on the status of this payment." },
+      { role: "debtor", content: "I see it here, but I'm not the one who signs off on payments over a certain amount. I'd need to run this by my manager first." },
+      { role: "agent", content: "That's completely understandable. Would it help if I followed up with you again in a few business days, once you've had a chance to discuss it with them?" },
+      { role: "debtor", content: "Yeah, give me until early next week and I should have an answer." }
+    ]
+  },
+  {
+    id: "txn_005",
+    company: "Northwind Supply",
+    invoice_ref: "#8847",
+    amount: "$15,600",
+    days_overdue: 30,
+    messages: [
+      { role: "agent", content: "Hi, I'm calling about invoice 8847 for $15,600, currently 30 days overdue. Do you have a moment to discuss this?" },
+      { role: "debtor", content: "Wait — I don't recognize this company at all, and nobody here authorized any order like this. This honestly looks like it could be some kind of scam." },
+      { role: "agent", content: "I want to take this seriously and get it resolved properly. I'm going to escalate this immediately to our compliance team for review, and we'll pause all outreach on this account until that's complete. Someone will follow up with you directly." },
+      { role: "debtor", content: "Okay, please do — I'd like this looked into." }
+    ]
+  }
+];
+
+// ----------------------------------------------------------------------
+// Routing rules (mirrors action_engine.py ROUTING_RULES)
+// ----------------------------------------------------------------------
+const DISPUTE_CATEGORIES = [
+  "Already Paid", "Wrong Amount", "Service Not Received",
+  "Need Manager Approval", "Fraud Claim", "Other / Unclear"
+];
+
+const ROUTING_RULES = {
+  "Already Paid": {
+    pause_sequence: true, notify: "finance", requires_evidence: true,
+    evidence_description: "proof of payment (date, method, and transaction/reference number)",
+    base_action: "Request payment confirmation, then verify with finance"
+  },
+  "Wrong Amount": {
+    pause_sequence: true, notify: "finance", requires_evidence: true,
+    evidence_description: "the original PO or pricing agreement",
+    base_action: "Hold disputed amount, request documentation, flag for finance review"
+  },
+  "Service Not Received": {
+    pause_sequence: true, notify: "account_manager", requires_evidence: false,
+    evidence_description: null,
+    base_action: "Escalate to account manager — do not continue automated sequence"
+  },
+  "Need Manager Approval": {
+    pause_sequence: false, notify: null, requires_evidence: false,
+    evidence_description: null,
+    base_action: "Schedule follow-up in 3-5 business days, continue gentle reminder cadence"
+  },
+  "Fraud Claim": {
+    pause_sequence: true, notify: "compliance", requires_evidence: false,
+    evidence_description: null,
+    base_action: "Immediate escalation — pause ALL automation on this account"
+  },
+  "Other / Unclear": {
+    pause_sequence: true, notify: "account_manager", requires_evidence: false,
+    evidence_description: null,
+    base_action: "Flag for human review — classification was not confident enough to auto-route"
+  }
+};
+
+const CONFIDENCE_AUTO_ROUTE = 80;
+const CONFIDENCE_SUGGEST = 50;
+
+const CLASSIFIER_SYSTEM_PROMPT = `You are a dispute classification engine for AgentCollect, a B2B debt collection platform. You analyze call and email transcripts between an AI recovery agent and a debtor, and classify any dispute the debtor raises.
+
+Categories you can assign:
+- "Already Paid": debtor claims the invoice has already been settled
+- "Wrong Amount": debtor disputes the invoiced amount (pricing/overcharge issue)
+- "Service Not Received": debtor claims the goods/service were never delivered
+- "Need Manager Approval": debtor needs internal sign-off before paying (NOT a dispute, but affects routing)
+- "Fraud Claim": debtor claims the invoice itself is illegitimate
+- "Other / Unclear": none of the above, or intent is ambiguous
+
+For each transcript, return ONLY a JSON object (no markdown fences, no preamble) with this exact structure:
+
+{
+  "category": "<one of the categories above, exact string match>",
+  "confidence": <integer 0-100>,
+  "extracted_entities": {
+    "claimed_payment_date": "<string or null>",
+    "claimed_payment_method": "<string or null>",
+    "reference_number": "<string or null>",
+    "disputed_amount": "<string or null>",
+    "other_notes": "<string or null>"
+  },
+  "reasoning": "<one sentence explaining why this category and confidence>"
+}
+
+Be conservative with confidence: only use 80+ when the debtor's intent is explicit and unambiguous. If multiple issues are raised, classify by the PRIMARY/first dispute raised.`;
+
+const FOLLOWUP_SYSTEM_PROMPT = `You write short, polite follow-up messages for AgentCollect, a B2B debt collection platform. These messages are sent (via email or as a voice agent script line) to a debtor, under the CLIENT'S brand — never mention AgentCollect by name.
+
+The message should:
+- Be 2-3 sentences max
+- Acknowledge what the debtor said
+- Politely request the specific evidence needed
+- Sound professional, warm, and non-confrontational
+- NOT mention "AI", "agent", "automation", or "AgentCollect"
+
+Return ONLY the message text, no preamble, no quotes, no markdown.`;
+
+// ----------------------------------------------------------------------
+// Render: invoice list
+// ----------------------------------------------------------------------
+let activeId = null;
+
+function renderInvoiceList() {
+  const list = document.getElementById("invoiceList");
+  list.innerHTML = "";
+
+  ACCOUNTS.forEach(acc => {
+    const item = document.createElement("div");
+    item.className = "invoice-item" + (acc.id === activeId ? " active" : "");
+    item.onclick = () => selectAccount(acc.id);
+
+    const done = acc._resultCache ? '<span class="status-pill done">Resolved</span>' : '';
+
+    item.innerHTML = `
+      <div class="row1">
+        <span>${acc.company}</span>
+        <span class="ref">${acc.invoice_ref}</span>
+      </div>
+      <div class="row2">
+        <span>${acc.amount}</span>
+        <span>${acc.days_overdue} days overdue</span>
+      </div>
+      ${done}
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ----------------------------------------------------------------------
+// Render: transcript + detail header
+// ----------------------------------------------------------------------
+function selectAccount(id) {
+  activeId = id;
+  const acc = ACCOUNTS.find(a => a.id === id);
+
+  document.getElementById("detailTitle").textContent = acc.company;
+  document.getElementById("detailMeta").textContent =
+    `Invoice ${acc.invoice_ref} · ${acc.amount} · ${acc.days_overdue} days overdue`;
+
+  const runBtn = document.getElementById("runBtn");
+  runBtn.disabled = false;
+  runBtn.onclick = () => runResolution(acc);
+
+  const transcriptEl = document.getElementById("transcriptContainer");
+  transcriptEl.innerHTML = `
+    <div class="section-label" style="margin-bottom:12px;">Call transcript</div>
+    <div class="transcript">
+      ${acc.messages.map(m => `
+        <div class="turn ${m.role}">
+          <div class="speaker">${m.role === "agent" ? "Agent" : "Debtor"}</div>
+          <div class="content">${m.content}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  const resultsEl = document.getElementById("resultsContainer");
+  if (acc._resultCache) {
+    renderResults(acc._resultCache);
+    resultsEl.classList.add("visible");
+  } else {
+    resultsEl.classList.remove("visible");
+    resultsEl.innerHTML = "";
+  }
+
+  renderInvoiceList();
+}
+
+// ----------------------------------------------------------------------
+// Action engine logic (mirrors action_engine.py recommend_action)
+// ----------------------------------------------------------------------
+function recommendAction(classification, invoiceRef, followupMessage) {
+  let category = classification.category;
+  const confidence = classification.confidence;
+
+  let tier;
+  if (confidence >= CONFIDENCE_AUTO_ROUTE) {
+    tier = "auto";
+  } else if (confidence >= CONFIDENCE_SUGGEST) {
+    tier = "suggested";
+  } else {
+    tier = "needs_review";
+    category = "Other / Unclear";
+  }
+
+  const rule = ROUTING_RULES[category] || ROUTING_RULES["Other / Unclear"];
+
+  let action = rule.base_action;
+  if (tier === "suggested") {
+    action = `[SUGGESTED — needs human confirmation] ${rule.base_action}`;
+  } else if (tier === "needs_review") {
+    action = `[NEEDS REVIEW — low confidence] ${rule.base_action}`;
+  }
+
+  return {
+    category,
+    confidence,
+    confidence_tier: tier,
+    pause_sequence: rule.pause_sequence,
+    notify: rule.notify,
+    action,
+    requires_evidence: rule.requires_evidence && (tier === "auto" || tier === "suggested"),
+    evidence_description: rule.evidence_description,
+    followup_message: followupMessage || null
+  };
+}
+
+// ----------------------------------------------------------------------
+// Live Claude API calls
+// ----------------------------------------------------------------------
+async function callClaude(systemPrompt, userPrompt, maxTokens) {
+  const response = await fetch("http://localhost:5000/api/claude", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      system: systemPrompt,
+      prompt: userPrompt,
+      max_tokens: maxTokens
+    })
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Server error ${response.status}: ${text}`);
+  }
+
+  const data = await response.json();
+  if (data.error) throw new Error(data.error);
+  return data.text.trim();
+}
+
+function parseClassification(raw) {
+  let cleaned = raw.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.split("```")[1];
+    if (cleaned.startsWith("json")) cleaned = cleaned.slice(4);
+    cleaned = cleaned.trim();
+  }
+  return JSON.parse(cleaned);
+}
+
+// ----------------------------------------------------------------------
+// Main resolve flow
+// ----------------------------------------------------------------------
+async function runResolution(acc) {
+  const resultsEl = document.getElementById("resultsContainer");
+  const runBtn = document.getElementById("runBtn");
+
+  runBtn.disabled = true;
+  runBtn.textContent = "Resolving...";
+  resultsEl.classList.add("visible");
+  resultsEl.innerHTML = `<div class="loading">Classifying dispute and generating action plan…</div>`;
+
+  try {
+    // Step 1: classify
+    const transcriptText = acc.messages
+      .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+      .join("\n");
+
+    const classificationRaw = await callClaude(
+      CLASSIFIER_SYSTEM_PROMPT,
+      `Classify this transcript:\n\n${transcriptText}`,
+      500
+    );
+    const classification = parseClassification(classificationRaw);
+
+    if (!DISPUTE_CATEGORIES.includes(classification.category)) {
+      classification._validation_warning = `Unexpected category '${classification.category}'`;
+    }
+
+    // Step 2: determine if evidence/follow-up is needed, generate if so
+    let followupMessage = null;
+    const tier = classification.confidence >= CONFIDENCE_AUTO_ROUTE ? "auto"
+                : classification.confidence >= CONFIDENCE_SUGGEST ? "suggested"
+                : "needs_review";
+
+    const ruleCategory = tier === "needs_review" ? "Other / Unclear" : classification.category;
+    const rule = ROUTING_RULES[ruleCategory] || ROUTING_RULES["Other / Unclear"];
+
+    if (rule.requires_evidence && (tier === "auto" || tier === "suggested")) {
+      followupMessage = await callClaude(
+        FOLLOWUP_SYSTEM_PROMPT,
+        `The debtor raised a '${classification.category}' dispute regarding invoice ${acc.invoice_ref}. We need them to provide: ${rule.evidence_description}. Write the follow-up message.`,
+        200
+      );
+    }
+
+    // Step 3: build action plan
+    const plan = recommendAction(classification, acc.invoice_ref, followupMessage);
+
+    acc._resultCache = { classification, plan };
+    renderResults(acc._resultCache);
+    renderInvoiceList();
+
+  } catch (err) {
+    resultsEl.innerHTML = `<div class="error-box"><strong>Error:</strong> ${escapeHtml(err.message)}</div>`;
+  } finally {
+    runBtn.disabled = false;
+    runBtn.textContent = "Resolve dispute";
+  }
+}
+
+// ----------------------------------------------------------------------
+// Render: results
+// ----------------------------------------------------------------------
+function renderResults({ classification, plan }) {
+  const resultsEl = document.getElementById("resultsContainer");
+
+  const notifyLabel = {
+    finance: "Finance team",
+    account_manager: "Account manager",
+    compliance: "Compliance team",
+    null: "—"
+  }[plan.notify] || "—";
+
+  const tierLabel = {
+    auto: "Auto-route",
+    suggested: "Suggested — confirm",
+    needs_review: "Needs review"
+  }[plan.confidence_tier];
+
+  resultsEl.innerHTML = `
+    <div class="results-grid">
+      <div class="card">
+        <div class="label">Classification</div>
+        <div class="value">${escapeHtml(classification.category)}</div>
+        <div class="sub">Confidence: ${classification.confidence}%</div>
+        <span class="tier-badge ${plan.confidence_tier}">${tierLabel}</span>
+      </div>
+      <div class="card">
+        <div class="label">Routing</div>
+        <div class="value">${plan.pause_sequence ? "Sequence paused" : "Sequence continues"}</div>
+        <div class="sub">Notify: ${notifyLabel}</div>
+      </div>
+    </div>
+
+    <div class="full-card">
+      <div class="label">Recommended action</div>
+      <p>${escapeHtml(plan.action)}</p>
+    </div>
+
+    <div class="full-card">
+      <div class="label">Reasoning</div>
+      <p>${escapeHtml(classification.reasoning)}</p>
+    </div>
+
+    <div class="full-card">
+      <div class="label">Extracted entities</div>
+      ${renderEntities(classification.extracted_entities)}
+    </div>
+
+    ${plan.followup_message ? `
+      <div class="full-card">
+        <div class="label">Generated follow-up message (brand-safe)</div>
+        <div class="followup-box">"${escapeHtml(plan.followup_message)}"</div>
+      </div>
+    ` : ""}
+  `;
+}
+
+function renderEntities(entities) {
+  if (!entities) return '<div class="entity-row"><span class="k">—</span></div>';
+  const labels = {
+    claimed_payment_date: "Claimed payment date",
+    claimed_payment_method: "Claimed payment method",
+    reference_number: "Reference number",
+    disputed_amount: "Disputed amount",
+    other_notes: "Other notes"
+  };
+  return Object.entries(labels).map(([key, label]) => `
+    <div class="entity-row">
+      <span class="k">${label}</span>
+      <span class="v">${entities[key] ? escapeHtml(entities[key]) : "—"}</span>
+    </div>
+  `).join("");
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ----------------------------------------------------------------------
+// Init
+// ----------------------------------------------------------------------
+renderInvoiceList();
+</script>
+
+</body>
+</html>
